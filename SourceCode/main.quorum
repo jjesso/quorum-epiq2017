@@ -1,0 +1,36 @@
+use Libraries.Game.Game
+use Libraries.Game.Graphics.Drawable
+use Libraries.Game.Graphics.Color
+
+class Main is Game
+    Drawable box
+    Drawable floor
+    Color color
+
+    action Main
+        StartGame()
+    end
+
+    action CreateGame
+        EnablePhysics2D(true)
+
+        box:LoadFilledRectangle(80, 80)
+        Add(box)
+        box:EnablePhysics(true)
+        box:SetResponsive()
+        box:SetColor(color:Blue())
+        box:SetX(200)
+        box:SetY(700)
+        box:SetRestitution(0.3)
+
+        floor:LoadFilledRectangle(1000, 30)
+        Add(floor)
+        floor:EnablePhysics(true)
+        floor:SetUnmovable()
+
+        SetGravity2D(0, -100)
+    end
+
+    action Update(number seconds)     
+    end
+end
