@@ -1,11 +1,86 @@
+/*
+Sounds from Freesound:
+Click by lebcraftlp [https://freesound.org/people/lebcraftlp/sounds/192273/]
+1-tone chime.wav by skowm001 [https://freesound.org/people/skowm001/sounds/268075/]
+PVC_pipe_hit_2.wav by LloydEvans09 [https://freesound.org/people/LloydEvans09/sounds/321809/]
+*/
+
+use Libraries.Compute.Math
 use Libraries.Game.Game
 use Libraries.Game.Graphics.Drawable
 use Libraries.Game.Graphics.Color
+use Libraries.Game.InputMonitor
+use Libraries.Interface.Events.KeyboardEvent
+use Libraries.Interface.Events.KeyboardListener
+use Libraries.Interface.Events.CollisionListener2D
+use Libraries.Interface.Events.CollisionEvent2D
+use Libraries.Sound.Speech
+use Libraries.Sound.Audio
+use Libraries.System.File
+use Libraries.System.SystemHelper
+use Libraries.Compute.Vector2
 
-class Main is Game
+class Main is Game, KeyboardListener, CollisionListener2D, Vector2
+
     Drawable box
-    Drawable floor
+    
+    // Walls are named on a 12x16 grid
+    Drawable HorA12toL12
+    Drawable VerA3toA12
+    Drawable HorA1toA16
+    Drawable VerL1toL16
+    Drawable VerC7toC12
+    Drawable HorC3toG3
+    Drawable VerC3toC7
+    Drawable HorD7toE7
+    Drawable VerH2toH10
+    Drawable VerF6toF7
+    Drawable HorD9toD11
+    Drawable HorE11toF11
+    Drawable VerE5toF5
+    Drawable VerJ10toJ11
+    Drawable HorK10toN10
+    Drawable VerJ2toJ8
+    Drawable VerN8toN9
+    Drawable HorJ7toN7
+    Drawable HorL3toO3
+    Drawable VerM3toM6
+    Drawable HorN5toO5
+    Drawable N5
+
+    // Start and end points
+    Drawable Start
+    Drawable End
+
+    // Intersection points
+    Drawable intersectB11
+    Drawable intersectB7
+    Drawable intersectB2
+    Drawable intersectG8
+    Drawable intersectG4
+    Drawable intersectD4
+    Drawable intersectD6
+    Drawable intersectG10
+    Drawable intersectD10
+    Drawable intersectG11
+    Drawable intersectI11
+    Drawable intersectI9
+    Drawable intersectI7
+    Drawable intersectK7
+    Drawable intersectO7
+    Drawable intersectO4
+    Drawable intersectM4
+    Drawable intersectO11
+    Drawable intersectK2
+
+    // Sound effects
+    Audio bonk
+    Audio chime
+    Audio click
+
+    Speech speech
     Color color
+    KeyboardEvent keys
 
     action Main
         StartGame()
@@ -14,23 +89,456 @@ class Main is Game
     action CreateGame
         EnablePhysics2D(true)
 
-        box:LoadFilledRectangle(80, 80)
-        Add(box)
+        bonk:Load("Sounds/321809__lloydevans09__pvc-pipe-hit-2.wav")
+        chime:Load("Sounds/268075__skowm001__1-tone-chime.wav")
+        click:Load("Sounds/192273__lebcraftlp__click.wav")
+
+        box:LoadFilledCircle(20)
         box:EnablePhysics(true)
-        box:SetResponsive()
         box:SetColor(color:Blue())
-        box:SetX(200)
-        box:SetY(700)
-        box:SetRestitution(0.3)
+        box:SetResponsive()
+        box:SetX(3)
+        box:SetY(55)
+        Add(box)
 
-        floor:LoadFilledRectangle(1000, 30)
-        Add(floor)
-        floor:EnablePhysics(true)
-        floor:SetUnmovable()
+        HorA12toL12:LoadFilledRectangle(800, 50)
+        Add(HorA12toL12)
+        HorA12toL12:EnablePhysics(true)
+        HorA12toL12:SetUnmovable()
 
-        SetGravity2D(0, -100)
+        VerA3toA12:LoadFilledRectangle(50, 600)
+        VerA3toA12:EnablePhysics(true)
+        VerA3toA12:SetY(100)
+        VerA3toA12:SetUnmovable()
+        Add(VerA3toA12)
+
+        HorA1toA16:LoadFilledRectangle(800, 50)
+        HorA1toA16:SetY(550)
+        HorA1toA16:EnablePhysics(true)
+        HorA1toA16:SetUnmovable()
+        Add(HorA1toA16)
+       
+        VerL1toL16:LoadFilledRectangle(50, 500)
+        VerL1toL16:SetX(750)
+        VerL1toL16:EnablePhysics(true)
+        VerL1toL16:SetUnmovable()
+        Add(VerL1toL16)
+
+        VerC7toC12:LoadFilledRectangle(50, 200)
+        VerC7toC12:EnablePhysics(true)
+        VerC7toC12:SetX(100)
+        VerC7toC12:SetUnmovable()
+        Add(VerC7toC12)
+
+        VerC3toC7:LoadFilledRectangle(50, 250)
+        VerC3toC7:EnablePhysics(true)
+        VerC3toC7:SetX(100)
+        VerC3toC7:SetY(250)
+        VerC3toC7:SetUnmovable()
+        Add(VerC3toC7)
+
+        HorC3toG3:LoadFilledRectangle(200, 50)
+        HorC3toG3:EnablePhysics(true)
+        HorC3toG3:SetUnmovable()
+        HorC3toG3:SetX(150)
+        HorC3toG3:SetY(450)
+        Add(HorC3toG3)
+
+        HorD7toE7:LoadFilledRectangle(100, 50)
+        HorD7toE7:EnablePhysics(true)
+        HorD7toE7:SetUnmovable()
+        HorD7toE7:SetX(150)
+        HorD7toE7:SetY(250)
+        Add(HorD7toE7)
+        
+        VerH2toH10:LoadFilledRectangle(50, 450)
+        VerH2toH10:EnablePhysics(true)
+        VerH2toH10:SetUnmovable()
+        VerH2toH10:SetX(350)
+        VerH2toH10:SetY(100)
+        Add(VerH2toH10)
+
+        VerF6toF7:LoadFilledRectangle(50, 100)
+        VerF6toF7:EnablePhysics(true)
+        VerF6toF7:SetUnmovable()
+        VerF6toF7:SetX(250)
+        VerF6toF7:SetY(250)
+        Add(VerF6toF7)
+
+        HorD9toD11:LoadFilledRectangle(150, 50)
+        HorD9toD11:EnablePhysics(true)
+        HorD9toD11:SetUnmovable()
+        HorD9toD11:SetX(150)
+        HorD9toD11:SetY(150)
+        Add(HorD9toD11)
+
+        HorE11toF11:LoadFilledRectangle(100, 50)
+        HorE11toF11:EnablePhysics(true)
+        HorE11toF11:SetUnmovable()
+        HorE11toF11:SetX(200)
+        HorE11toF11:SetY(50)
+        Add(HorE11toF11)
+
+        VerE5toF5:LoadFilledRectangle(100, 50)
+        VerE5toF5:EnablePhysics(true)
+        VerE5toF5:SetUnmovable()
+        VerE5toF5:SetX(200)
+        VerE5toF5:SetY(350)
+        Add(VerE5toF5)
+
+        VerJ10toJ11:LoadFilledRectangle(50, 100)
+        VerJ10toJ11:EnablePhysics(true)
+        VerJ10toJ11:SetUnmovable()
+        VerJ10toJ11:SetX(450)
+        VerJ10toJ11:SetY(50)
+        Add(VerJ10toJ11)
+
+        HorK10toN10:LoadFilledRectangle(200, 50)
+        HorK10toN10:EnablePhysics(true)
+        HorK10toN10:SetUnmovable()
+        HorK10toN10:SetX(500)
+        HorK10toN10:SetY(100)
+        Add(HorK10toN10)
+
+        VerJ2toJ8:LoadFilledRectangle(50, 300)
+        VerJ2toJ8:EnablePhysics(true)
+        VerJ2toJ8:SetUnmovable()
+        VerJ2toJ8:SetX(450)
+        VerJ2toJ8:SetY(300)
+        Add(VerJ2toJ8)
+
+        VerN8toN9:LoadFilledRectangle(50, 100)
+        VerN8toN9:EnablePhysics(true)
+        VerN8toN9:SetUnmovable()
+        VerN8toN9:SetX(650)
+        VerN8toN9:SetY(150)
+        Add(VerN8toN9)
+
+        HorJ7toN7:LoadFilledRectangle(200, 50)
+        HorJ7toN7:EnablePhysics(true)
+        HorJ7toN7:SetUnmovable()
+        HorJ7toN7:SetX(450)
+        HorJ7toN7:SetY(200)
+        Add(HorJ7toN7)
+
+        HorL3toO3:LoadFilledRectangle(250, 50)
+        HorL3toO3:EnablePhysics(true)
+        HorL3toO3:SetUnmovable()
+        HorL3toO3:SetX(550)
+        HorL3toO3:SetY(450)
+        Add(HorL3toO3)
+
+        VerM3toM6:LoadFilledRectangle(50, 200)
+        VerM3toM6:EnablePhysics(true)
+        VerM3toM6:SetUnmovable()
+        VerM3toM6:SetX(550)
+        VerM3toM6:SetY(300)
+        Add(VerM3toM6)
+
+        HorN5toO5:LoadFilledRectangle(100, 50)
+        HorN5toO5:EnablePhysics(true)
+        HorN5toO5:SetUnmovable()
+        HorN5toO5:SetX(600)
+        HorN5toO5:SetY(300)
+        Add(HorN5toO5)
+
+        N5:LoadFilledRectangle(50, 50)
+        N5:EnablePhysics(true)
+        N5:SetUnmovable()
+        N5:SetX(650)
+        N5:SetY(350)
+        Add(N5)
+
+        Start:LoadFilledRectangle(5, 50)
+        Start:SetY(50)
+        Start:EnablePhysics(true)
+        Start:SetUnmovable()
+        Add(Start)
+        Start:Hide()
+
+        End:LoadFilledRectangle(5, 50)
+        End:EnablePhysics(true)
+        End:SetUnmovable()
+        End:SetX(795)
+        End:SetY(500)
+        Add(End)
+        End:Hide()
+
+        intersectB11:LoadFilledRectangle(50, 50)
+        intersectB11:SetX(50)
+        intersectB11:SetY(50)
+        intersectB11:SetCollidable(true)
+        Add(intersectB11)
+        intersectB11:Hide()
+
+        intersectB7:LoadFilledRectangle(50, 50)
+        intersectB7:SetX(50)
+        intersectB7:SetY(200)
+        intersectB7:SetCollidable(true)
+        Add(intersectB7)
+        intersectB7:Hide()
+
+        intersectB2:LoadFilledRectangle(50, 50)
+        intersectB2:SetX(50)
+        intersectB2:SetY(500)
+        intersectB2:SetCollidable(true)
+        Add(intersectB2)
+        intersectB2:Hide()
+
+        intersectG8:LoadFilledRectangle(50, 50)
+        intersectG8:SetX(300)
+        intersectG8:SetY(200)
+        intersectG8:SetCollidable(true)
+        Add(intersectG8)
+        intersectG8:Hide()
+
+        intersectG4:LoadFilledRectangle(50, 50)
+        intersectG4:SetX(300)
+        intersectG4:SetY(400)
+        intersectG4:SetCollidable(true)
+        Add(intersectG4)
+        intersectG4:Hide()
+
+        intersectD4:LoadFilledRectangle(50, 50)
+        intersectD4:SetX(150)
+        intersectD4:SetY(400)
+        intersectD4:SetCollidable(true)
+        Add(intersectD4)
+        intersectD4:Hide()
+
+        intersectD6:LoadFilledRectangle(50, 50)
+        intersectD6:SetX(150)
+        intersectD6:SetY(300)
+        intersectD6:SetCollidable(true)
+        Add(intersectD6)
+        intersectD6:Hide()
+
+        intersectG10:LoadFilledRectangle(50, 50)
+        intersectG10:SetX(300)
+        intersectG10:SetY(100)
+        intersectG10:SetCollidable(true)
+        Add(intersectG10)
+        intersectG10:Hide()
+
+        intersectD10:LoadFilledRectangle(50, 50)
+        intersectD10:SetX(150)
+        intersectD10:SetY(100)
+        intersectD10:SetCollidable(true)
+        Add(intersectD10)
+        intersectD10:Hide()
+
+        intersectG11:LoadFilledRectangle(50, 50)
+        intersectG11:SetX(300)
+        intersectG11:SetY(50)
+        intersectG11:SetCollidable(true)
+        Add(intersectG11)
+        intersectG11:Hide()
+
+        intersectI11:LoadFilledRectangle(50, 50)
+        intersectI11:SetX(400)
+        intersectI11:SetY(50)
+        intersectI11:SetCollidable(true)
+        Add(intersectI11)
+        intersectI11:Hide()
+
+        intersectI9:LoadFilledRectangle(50, 50)
+        intersectI9:SetX(400)
+        intersectI9:SetY(150)
+        intersectI9:SetCollidable(true)
+        Add(intersectI9)
+        intersectI9:Hide()
+
+        intersectI7:LoadFilledRectangle(50, 50)
+        intersectI7:SetX(400)
+        intersectI7:SetY(250)
+        intersectI7:SetCollidable(true)
+        Add(intersectI7)
+        intersectI7:Hide()
+
+        intersectK7:LoadFilledRectangle(50, 50)
+        intersectK7:SetX(500)
+        intersectK7:SetY(250)
+        intersectK7:SetCollidable(true)
+        Add(intersectK7)
+        intersectK7:Hide()
+
+        intersectO7:LoadFilledRectangle(50, 50)
+        intersectO7:SetX(700)
+        intersectO7:SetY(250)
+        intersectO7:SetCollidable(true)
+        Add(intersectO7)
+        intersectO7:Hide()
+
+        intersectO4:LoadFilledRectangle(50, 50)
+        intersectO4:SetX(700)
+        intersectO4:SetY(400)
+        intersectO4:SetCollidable(true)
+        Add(intersectO4)
+        intersectO4:Hide()
+
+        intersectM4:LoadFilledRectangle(50, 50)
+        intersectM4:SetX(600)
+        intersectM4:SetY(400)
+        intersectM4:SetCollidable(true)
+        Add(intersectM4)
+        intersectM4:Hide()
+
+        intersectO11:LoadFilledRectangle(50, 50)
+        intersectO11:SetX(700)
+        intersectO11:SetY(50)
+        intersectO11:SetCollidable(true)
+        Add(intersectO11)
+        intersectO11:Hide()
+
+        intersectK2:LoadFilledRectangle(50, 50)
+        intersectK2:SetX(500)
+        intersectK2:SetY(500)
+        intersectK2:SetCollidable(true)
+        Add(intersectK2)
+        intersectK2:Hide()
+
+        AddKeyboardListener(me)
+        AddCollisionListener(me)
     end
 
-    action Update(number seconds)     
+    action PressedKey(KeyboardEvent event)
+        if event:keyCode = event:UP
+            box:SetLinearVelocityY(100)
+        elseif event:keyCode = event:DOWN
+            box:SetLinearVelocityY(-100)
+        elseif event:keyCode = event:LEFT
+            box:SetLinearVelocityX(-100)
+        elseif event:keyCode = event:RIGHT
+            box:SetLinearVelocityX(100)
+        end
+    end
+
+    action ReleasedKey(KeyboardEvent event)
+        if event:keyCode = event:UP
+            box:SetLinearVelocityY(0)
+        elseif event:keyCode = event:DOWN
+            box:SetLinearVelocityY(0)
+        elseif event:keyCode = event:LEFT
+            box:SetLinearVelocityX(0)
+        elseif event:keyCode = event:RIGHT
+            box:SetLinearVelocityX(0)
+        end
+    end
+
+    action BeginCollision(CollisionEvent2D collision)
+        Drawable itemA = cast(Drawable, collision:GetItemA())
+        Drawable itemB = cast(Drawable, collision:GetItemB())
+        if (itemA = box and itemB = HorA12toL12) or (itemB = box and itemA = HorA12toL12)
+            bonk:Play()
+        elseif (itemA = box and itemB = VerA3toA12) or (itemB = box and itemA = VerA3toA12)
+            bonk:Play()
+        elseif (itemA = box and itemB = HorA1toA16) or (itemB = box and itemA = HorA1toA16)
+            bonk:Play()
+        elseif (itemA = box and itemB = VerL1toL16) or (itemB = box and itemA = VerL1toL16)
+            bonk:Play()
+        elseif (itemA = box and itemB = VerC7toC12) or (itemB = box and itemA = VerC7toC12)
+            bonk:Play()
+        elseif (itemA = box and itemB = HorC3toG3) or (itemB = box and itemA = HorC3toG3)
+            bonk:Play()
+        elseif (itemA = box and itemB = VerC3toC7) or (itemB = box and itemA = VerC3toC7)
+            bonk:Play()
+        elseif (itemA = box and itemB = HorD7toE7) or (itemB = box and itemA = HorD7toE7)
+            bonk:Play()
+        elseif (itemA = box and itemB = VerH2toH10) or (itemB = box and itemA = VerH2toH10)
+            bonk:Play()
+        elseif (itemA = box and itemB = VerF6toF7) or (itemB = box and itemA = VerF6toF7)
+            bonk:Play()
+        elseif (itemA = box and itemB = HorD9toD11) or (itemB = box and itemA = HorD9toD11)
+            bonk:Play()
+        elseif (itemA = box and itemB = HorE11toF11) or (itemB = box and itemA = HorE11toF11)
+            bonk:Play()
+        elseif (itemA = box and itemB = VerE5toF5) or (itemB = box and itemA = VerE5toF5)
+            bonk:Play()
+        elseif (itemA = box and itemB = VerJ10toJ11) or (itemB = box and itemA = VerJ10toJ11)
+            bonk:Play()
+        elseif (itemA = box and itemB = HorK10toN10) or (itemB = box and itemA = HorK10toN10)
+            bonk:Play()
+        elseif (itemA = box and itemB = VerJ2toJ8) or (itemB = box and itemA = VerJ2toJ8)
+            bonk:Play()
+        elseif (itemA = box and itemB = VerN8toN9) or (itemB = box and itemA = VerN8toN9)
+            bonk:Play()
+        elseif (itemA = box and itemB = HorJ7toN7) or (itemB = box and itemA = HorJ7toN7)
+            bonk:Play()
+        elseif (itemA = box and itemB = HorL3toO3) or (itemB = box and itemA = HorL3toO3)
+            bonk:Play()
+        elseif (itemA = box and itemB = VerM3toM6) or (itemB = box and itemA = VerM3toM6)
+            bonk:Play()
+        elseif (itemA = box and itemB = HorN5toO5) or (itemB = box and itemA = HorN5toO5)
+            bonk:Play()
+        elseif (itemA = box and itemB = N5) or (itemB = box and itemA = N5)
+            bonk:Play()
+        elseif (itemA = box and itemB = Start) or (itemB = box and itemA = Start)
+            speech:Say( "Start of maze")            
+        elseif (itemA = box and itemB = End) or (itemB = box and itemA = End)
+            speech:Say("Maze complete!")
+        elseif (itemA = box and itemB = intersectB11) or (itemB = box and itemA = intersectB11)
+            chime:Play()
+            speech:Say("North, West")
+        elseif (itemA = box and itemB = intersectB7) or (itemB = box and itemA = intersectB7)
+            chime:Play()
+            speech:Say("North, East, South")
+        elseif (itemA = box and itemB = intersectB2) or (itemB = box and itemA = intersectB2)
+            chime:Play()
+            speech:Say("East, South")
+        elseif (itemA = box and itemB = intersectG8) or (itemB = box and itemA = intersectG8)
+            chime:Play()
+            speech:Say("North, South, West")
+        elseif (itemA = box and itemB = intersectG4) or (itemB = box and itemA = intersectG4)
+            chime:Play()
+            speech:Say("South, West")
+        elseif (itemA = box and itemB = intersectD4) or (itemB = box and itemA = intersectD4)
+            chime:Play()
+            speech:Say("East, South")
+        elseif (itemA = box and itemB = intersectD6) or (itemB = box and itemA = intersectD6)
+            chime:Play()
+            speech:Say("North, East")
+        elseif (itemA = box and itemB = intersectG10) or (itemB = box and itemA = intersectG10)
+            chime:Play()
+            speech:Say("North, South, West")
+        elseif (itemA = box and itemB = intersectD10) or (itemB = box and itemA = intersectD10)
+            chime:Play()
+            speech:Say("East, South")
+        elseif (itemA = box and itemB = intersectG11) or (itemB = box and itemA = intersectG11)
+            chime:Play()
+            speech:Say("North, East")
+        elseif (itemA = box and itemB = intersectI11) or (itemB = box and itemA = intersectI11)
+            chime:Play()
+            speech:Say("North, West")
+        elseif (itemA = box and itemB = intersectI9) or (itemB = box and itemA = intersectI9)
+            chime:Play()
+            speech:Say("North, East, South")
+        elseif (itemA = box and itemB = intersectI7) or (itemB = box and itemA = intersectI7)
+            chime:Play()
+            speech:Say("North, East, South")
+        elseif (itemA = box and itemB =intersectK7) or (itemB = box and itemA = intersectK7)
+            chime:Play()
+            speech:Say("North, East, West")
+        elseif (itemA = box and itemB = intersectO7) or (itemB = box and itemA = intersectO7)
+            chime:Play()
+            speech:Say("North, South, West")
+        elseif (itemA =  box and itemB = intersectO4) or (itemB = box and itemA = intersectO4)
+            chime:Play()
+            speech:Say("South, West")
+        elseif (itemA = box and itemB = intersectM4) or (itemB = box and itemA = intersectM4)
+            chime:Play()
+            speech:Say("East, South")
+        elseif (itemA = box and itemB = intersectO11) or (itemB = box and itemA = intersectO11)
+            chime:Play()
+            speech:Say("North, West")
+        elseif (itemA = box and itemB = intersectK2) or (itemB = box and itemA = intersectK2)
+            chime:Play()
+            speech:Say("East, South")
+        end
+    end
+
+    action FinishCollision(CollisionEvent2D collision)
+    end
+
+    action Update(number seconds)
     end
 end
